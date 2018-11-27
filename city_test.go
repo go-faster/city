@@ -1860,3 +1860,27 @@ func TestCityHash(t *testing.T) {
 	}
 	test(t, testdata[i], 0, dataSize)
 }
+
+func BenchmarkCityHash32(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		CityHash32(data[:1024])
+	}
+}
+
+func BenchmarkCityHash64(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		CityHash64(data[:1024])
+	}
+}
+
+func BenchmarkCityHash128(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		CityHash128(data[:1024])
+	}
+}
