@@ -1,8 +1,24 @@
 package city
 
+import (
+	"encoding/binary"
+	"fmt"
+)
+
 // U128 is uint128.
 type U128 struct {
 	Low, High uint64 // much faster than uint64[2]
+}
+
+// Arr returns byte array that represents uint128 value of U128 in big endian.
+func (u U128) Arr() (v [16]byte) {
+	binary.BigEndian.PutUint64(v[:8], u.Low)
+	binary.BigEndian.PutUint64(v[8:], u.High)
+	return v
+}
+
+func (u U128) String() string {
+	return fmt.Sprintf("%x", u.Arr())
 }
 
 // A subroutine for Hash128(). Returns a decent 128-bit hash for strings
