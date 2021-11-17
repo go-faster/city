@@ -1,8 +1,6 @@
 package city
 
-import (
-	"testing"
-)
+import "testing"
 
 const (
 	seed0    uint64 = 1234567

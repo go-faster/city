@@ -1,8 +1,6 @@
 package city
 
-import (
-	"fmt"
-)
+import "fmt"
 
 func ExampleHash32() {
 	s := []byte("hello")

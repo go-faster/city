@@ -1,8 +1,6 @@
 package city
 
-import (
-	"encoding/binary"
-)
+import "encoding/binary"
 
 func bswap64(x uint64) uint64 {
 	return ((x & 0xff00000000000000) >> 56) |
