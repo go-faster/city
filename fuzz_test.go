@@ -44,3 +44,12 @@ func FuzzHash32(f *testing.F) {
 		Hash32(data)
 	})
 }
+
+func FuzzCH64(f *testing.F) {
+	for _, s := range _defaultCorpus {
+		f.Add(s)
+	}
+	f.Fuzz(func(t *testing.T, data []byte) {
+		CH64(data)
+	})
+}
