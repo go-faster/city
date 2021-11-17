@@ -1893,6 +1893,29 @@ func BenchmarkCityHash128(b *testing.B) {
 	}
 }
 
+func BenchmarkCityHash64Small(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	b.ReportAllocs()
+	b.SetBytes(10)
+
+	for i := 0; i < b.N; i++ {
+		Hash64(data[:10])
+	}
+}
+
+func BenchmarkCityHash128Small(b *testing.B) {
+	setup()
+	b.ResetTimer()
+
+	b.ReportAllocs()
+	b.SetBytes(10)
+
+	for i := 0; i < b.N; i++ {
+		Hash128(data[:10])
+	}
+}
+
 func TestRotate(t *testing.T) {
 	t.Run("32", func(t *testing.T) {
 		if rotate32(100, 0) != 100 {
