@@ -53,3 +53,12 @@ func FuzzCH64(f *testing.F) {
 		CH64(data)
 	})
 }
+
+func FuzzCH128(f *testing.F) {
+	for _, s := range _defaultCorpus {
+		f.Add(s)
+	}
+	f.Fuzz(func(t *testing.T, data []byte) {
+		CH128(data)
+	})
+}
