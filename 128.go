@@ -1,4 +1,4 @@
-package cityhash
+package city
 
 // A subroutine for Hash128(). Returns a decent 128-bit hash for strings
 // of any length representable in signed long. Based on City and Mumur.

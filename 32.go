@@ -1,4 +1,4 @@
-package cityhash
+package city
 
 import "encoding/binary"
 

@@ -1,4 +1,4 @@
-package cityhash
+package city
 
 // U128 is uint128.
 type U128 struct {
