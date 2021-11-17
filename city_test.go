@@ -1900,7 +1900,7 @@ func TestRotate(t *testing.T) {
 		}
 	})
 	t.Run("64", func(t *testing.T) {
-		if rotate(100, 0) != 0 {
+		if rotate(100, 0) != 100 {
 			t.Error("unexpected rotate")
 		}
 	})
