@@ -1,5 +1,10 @@
 package city
 
+// U128 is uint128.
+type U128 struct {
+	Low, High uint64 // much faster than uint64[2]
+}
+
 // A subroutine for Hash128(). Returns a decent 128-bit hash for strings
 // of any length representable in signed long. Based on City and Mumur.
 func cityMurmur(s []byte, length int, seed U128) U128 {
