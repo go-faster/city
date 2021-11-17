@@ -1,8 +1,6 @@
 package cityhash
 
-import (
-	"encoding/binary"
-)
+import "encoding/binary"
 
 // Some primes between 2^63 and 2^64 for various uses.
 const (
@@ -92,8 +90,8 @@ func hash32Len5to12(s []byte, length int) uint32 {
 	return fmix(mur(c, mur(b, mur(a, d))))
 }
 
-// CityHash32 return 32-bit hash.
-func CityHash32(s []byte) uint32 {
+// Hash32 return 32-bit hash.
+func Hash32(s []byte) uint32 {
 	length := len(s)
 	if length <= 4 {
 		return hash32Len0to4(s, length)

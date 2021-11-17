@@ -4,5 +4,5 @@
 //
 // All members of the CityHash family were designed with heavy reliance
 // on previous work by Austin Appleby, Bob Jenkins, and others.
-// For example, CityHash32 has many similarities with Murmur3a.
+// For example, Hash32 has many similarities with Murmur3a.
 package cityhash

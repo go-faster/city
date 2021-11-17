@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	seed128 = Uint128{seed0, seed1}
+	seed128 = U128{seed0, seed1}
 	data    [dataSize]byte
 )
 
@@ -1840,16 +1840,16 @@ func check(t *testing.T, expected, actual uint64, offset, length int) {
 }
 
 func test(t *testing.T, expected []uint64, offset, length int) {
-	u := CityHash128(data[offset : offset+length])
-	v := CityHash128WithSeed(data[offset:offset+length], seed128)
-	check(t, expected[0], CityHash64(data[offset:offset+length]), offset, length)
-	check(t, expected[15], uint64(CityHash32(data[offset:offset+length])), offset, length)
-	check(t, expected[1], CityHash64WithSeed(data[offset:offset+length], seed0), offset, length)
-	check(t, expected[2], CityHash64WithSeeds(data[offset:offset+length], seed0, seed1), offset, length)
-	check(t, expected[3], u.Low64(), offset, length)
-	check(t, expected[4], u.High64(), offset, length)
-	check(t, expected[5], v.Low64(), offset, length)
-	check(t, expected[6], v.High64(), offset, length)
+	u := Hash128(data[offset : offset+length])
+	v := Hash128Seed(data[offset:offset+length], seed128)
+	check(t, expected[0], Hash64(data[offset:offset+length]), offset, length)
+	check(t, expected[15], uint64(Hash32(data[offset:offset+length])), offset, length)
+	check(t, expected[1], Hash64WithSeed(data[offset:offset+length], seed0), offset, length)
+	check(t, expected[2], Hash64WithSeeds(data[offset:offset+length], seed0, seed1), offset, length)
+	check(t, expected[3], u.Low, offset, length)
+	check(t, expected[4], u.High, offset, length)
+	check(t, expected[5], v.Low, offset, length)
+	check(t, expected[6], v.High, offset, length)
 }
 
 func TestCityHash(t *testing.T) {
@@ -1865,7 +1865,7 @@ func BenchmarkCityHash32(b *testing.B) {
 	setup()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		CityHash32(data[:1024])
+		Hash32(data[:1024])
 	}
 }
 
@@ -1873,14 +1873,18 @@ func BenchmarkCityHash64(b *testing.B) {
 	setup()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		CityHash64(data[:1024])
+		Hash64(data[:1024])
 	}
 }
 
 func BenchmarkCityHash128(b *testing.B) {
 	setup()
 	b.ResetTimer()
+
+	b.ReportAllocs()
+	b.SetBytes(1024)
+
 	for i := 0; i < b.N; i++ {
-		CityHash128(data[:1024])
+		Hash128(data[:1024])
 	}
 }

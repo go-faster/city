@@ -5,14 +5,14 @@ import (
 )
 
 func bswap64(x uint64) uint64 {
-	return (((x & 0xff00000000000000) >> 56) |
+	return ((x & 0xff00000000000000) >> 56) |
 		((x & 0x00ff000000000000) >> 40) |
 		((x & 0x0000ff0000000000) >> 24) |
 		((x & 0x000000ff00000000) >> 8) |
 		((x & 0x00000000ff000000) << 8) |
 		((x & 0x0000000000ff0000) << 24) |
 		((x & 0x000000000000ff00) << 40) |
-		((x & 0x00000000000000ff) << 56))
+		((x & 0x00000000000000ff) << 56)
 }
 
 func fetch64(p []byte) uint64 {
@@ -33,22 +33,22 @@ func shiftMix(val uint64) uint64 {
 	return val ^ (val >> 47)
 }
 
-func hash128to64(x Uint128) uint64 {
+func hash128to64(x U128) uint64 {
 	const mul = uint64(0x9ddfea08eb382d69)
-	a := (x.Low64() ^ x.High64()) * mul
-	a ^= (a >> 47)
-	b := (x.High64() ^ a) * mul
-	b ^= (b >> 47)
+	a := (x.Low ^ x.High) * mul
+	a ^= a >> 47
+	b := (x.High ^ a) * mul
+	b ^= b >> 47
 	b *= mul
 	return b
 }
 
 func hashLen16(u, v uint64) uint64 {
-	return hash128to64(Uint128{u, v})
+	return hash128to64(U128{u, v})
 }
 
 func hashLen16mul(u, v, mul uint64) uint64 {
-	// Murmur-inspired hasing.
+	// Murmur-inspired hashing.
 	a := (u ^ v) * mul
 	a ^= a >> 47
 	b := (v ^ a) * mul
@@ -104,18 +104,18 @@ func hashLen17to32(s []byte, length int) uint64 {
 
 // Return a 16-byte hash for 48 bytes. Quick and dirty.
 // callers do best to use "random-looking" values for a and b.
-func weakHashLen32WithSeeds(w, x, y, z, a, b uint64) Uint128 {
+func weakHashLen32WithSeeds(w, x, y, z, a, b uint64) U128 {
 	a += w
 	b = rotate(b+a+z, 21)
 	c := a
 	a += x
 	a += y
 	b += rotate(a, 44)
-	return Uint128{a + z, b + c}
+	return U128{a + z, b + c}
 }
 
 // Return a 16-byte hash for s[0] ... s[31], a, and b. Quick and dirty.
-func weakHashLen32WithSeedsByte(s []byte, a, b uint64) Uint128 {
+func weakHashLen32WithSeedsByte(s []byte, a, b uint64) U128 {
 	return weakHashLen32WithSeeds(
 		fetch64(s),
 		fetch64(s[8:]),
@@ -147,8 +147,8 @@ func hashLen33to64(s []byte, length int) uint64 {
 	return b + x
 }
 
-// CityHash64 return a 64-bit hash.
-func CityHash64(s []byte) uint64 {
+// Hash64 return a 64-bit hash.
+func Hash64(s []byte) uint64 {
 	length := len(s)
 	if length <= 32 {
 		if length <= 16 {
@@ -172,13 +172,13 @@ func CityHash64(s []byte) uint64 {
 	tmpLength := uint32(length)
 	tmpLength = uint32(tmpLength-1) & ^uint32(63)
 	for {
-		x = rotate(x+y+v.Low64()+fetch64(s[8:]), 37) * k1
-		y = rotate(y+v.High64()+fetch64(s[48:]), 42) * k1
-		x ^= w.High64()
-		y += v.Low64() + fetch64(s[40:])
-		z = rotate(z+w.Low64(), 33) * k1
-		v = weakHashLen32WithSeedsByte(s, v.High64()*k1, x+w.Low64())
-		w = weakHashLen32WithSeedsByte(s[32:], z+w.High64(), y+fetch64(s[16:]))
+		x = rotate(x+y+v.Low+fetch64(s[8:]), 37) * k1
+		y = rotate(y+v.High+fetch64(s[48:]), 42) * k1
+		x ^= w.High
+		y += v.Low + fetch64(s[40:])
+		z = rotate(z+w.Low, 33) * k1
+		v = weakHashLen32WithSeedsByte(s, v.High*k1, x+w.Low)
+		w = weakHashLen32WithSeedsByte(s[32:], z+w.High, y+fetch64(s[16:]))
 		z, x = x, z
 		s = s[64:]
 		tmpLength -= 64
@@ -188,16 +188,16 @@ func CityHash64(s []byte) uint64 {
 	}
 
 	return hashLen16(
-		hashLen16(v.Low64(), w.Low64())+shiftMix(y)*k1+z,
-		hashLen16(v.High64(), w.High64())+x)
+		hashLen16(v.Low, w.Low)+shiftMix(y)*k1+z,
+		hashLen16(v.High, w.High)+x)
 }
 
-// CityHash64WithSeed return a 64-bit hash with a seed.
-func CityHash64WithSeed(s []byte, seed uint64) uint64 {
-	return CityHash64WithSeeds(s, k2, seed)
+// Hash64WithSeed return a 64-bit hash with a seed.
+func Hash64WithSeed(s []byte, seed uint64) uint64 {
+	return Hash64WithSeeds(s, k2, seed)
 }
 
-// CityHash64WithSeeds return a 64-bit hash with two seeds.
-func CityHash64WithSeeds(s []byte, seed0, seed1 uint64) uint64 {
-	return hashLen16(CityHash64(s)-seed0, seed1)
+// Hash64WithSeeds return a 64-bit hash with two seeds.
+func Hash64WithSeeds(s []byte, seed0, seed1 uint64) uint64 {
+	return hashLen16(Hash64(s)-seed0, seed1)
 }
