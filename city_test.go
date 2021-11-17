@@ -1928,3 +1928,37 @@ func TestRotate(t *testing.T) {
 		}
 	})
 }
+
+func TestClickhouse(t *testing.T) {
+	for _, tt := range []struct {
+		Value    string
+		Expected uint64
+	}{
+		{Value: "", Expected: 11160318154034397263},
+		{Value: "Moscow", Expected: 12507901496292878638},
+		{Value: "CH", Expected: 15020278857692564095},
+		{Value: "ClickHouse", Expected: 12904064065176299341},
+
+		{
+			Value:    "ClickHouseIsAnOpenSource",
+			Expected: 15757221730003458568,
+		},
+		{
+			Value:    "ClickHouseIsAnOpenSourceAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+			Expected: 11821112606263625207,
+		},
+		{
+			Value:    "ClickHouseIsAnOpenSourceAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+			Expected: 6686391753024203911,
+		},
+		{
+			Value:    "ClickHouse is an open-source, high performance columnar OLAP database management system for real-time analytics using SQL",
+			Expected: 12510537841872258940,
+		},
+	} {
+		v := CH64([]byte(tt.Value))
+		if v != tt.Expected {
+			t.Errorf("CH64(%q) %d (got) != %d (expected)", tt.Value, v, tt.Expected)
+		}
+	}
+}

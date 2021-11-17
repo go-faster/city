@@ -9,6 +9,9 @@ go get github.com/go-faster/city
 city.Hash128([]byte("hello"))
 ```
 
+* Faster
+* Supports ClickHouse hash
+
 ```
 name            old time/op    new time/op    delta
 CityHash32-32      298ns ± 1%     295ns ± 2%      ~     (p=0.421 n=5+5)

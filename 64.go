@@ -27,6 +27,10 @@ func rotate(val uint64, shift uint) uint64 {
 	return (val >> shift) | val<<(64-shift)
 }
 
+func rotatePositive(val uint64, shift int) uint64 {
+	return (val >> shift) | val<<(64-shift)
+}
+
 func shiftMix(val uint64) uint64 {
 	return val ^ (val >> 47)
 }
@@ -120,7 +124,8 @@ func weakHashLen32WithSeedsByte(s []byte, a, b uint64) U128 {
 		fetch64(s[16:]),
 		fetch64(s[24:]),
 		a,
-		b)
+		b,
+	)
 }
 
 // Return an 8-byte hash for 33 to 64 bytes.
@@ -187,7 +192,8 @@ func Hash64(s []byte) uint64 {
 
 	return hashLen16(
 		hashLen16(v.Low, w.Low)+shiftMix(y)*k1+z,
-		hashLen16(v.High, w.High)+x)
+		hashLen16(v.High, w.High)+x,
+	)
 }
 
 // Hash64WithSeed return a 64-bit hash with a seed.
