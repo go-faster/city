@@ -7,7 +7,10 @@ import (
 
 // U128 is uint128.
 type U128 struct {
-	Low, High uint64 // much faster than uint64[2]
+	Low  uint64 // first 32 bits
+	High uint64 // last 32 bits
+
+	// much faster than uint64[2]
 }
 
 // Arr returns byte array that represents uint128 value of U128 in big endian.
