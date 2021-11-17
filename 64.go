@@ -14,8 +14,7 @@ func bswap64(x uint64) uint64 {
 }
 
 func fetch64(p []byte) uint64 {
-	r := binary.LittleEndian.Uint64(p)
-	return r
+	return binary.LittleEndian.Uint64(p)
 }
 
 // Bitwise right rotate
