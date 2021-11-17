@@ -1,3 +1,3 @@
-module github.com/go-faster/cityhash
+module github.com/go-faster/city
 
 go 1.17
