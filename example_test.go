@@ -1,10 +1,14 @@
-package city
+package city_test
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/go-faster/city"
+)
 
 func ExampleHash32() {
 	s := []byte("hello")
-	hash32 := Hash32(s)
+	hash32 := city.Hash32(s)
 	fmt.Printf("the 32-bit hash of 'hello' is: 0x%x\n", hash32)
 
 	// Output:
@@ -13,7 +17,7 @@ func ExampleHash32() {
 
 func ExampleHash64() {
 	s := []byte("hello")
-	hash64 := Hash64(s)
+	hash64 := city.Hash64(s)
 	fmt.Printf("the 64-bit hash of 'hello' is: 0x%x\n", hash64)
 
 	// Output:
@@ -21,10 +25,7 @@ func ExampleHash64() {
 }
 
 func ExampleHash128() {
-	s := []byte("hello")
-	hash128 := Hash128(s)
-	fmt.Printf("the 128-bit hash of 'hello' is: 0x%x%x\n", hash128.High, hash128.Low)
+	fmt.Println(city.Hash128([]byte("hello")))
 
-	// Output:
-	// the 128-bit hash of 'hello' is: 0x65148f580b45f3476f72e4abb491a74a
+	// Output: 6f72e4abb491a74a65148f580b45f347
 }
