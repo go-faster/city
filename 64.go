@@ -78,9 +78,9 @@ func hashLen0to16(s []byte, length int) uint64 {
 		return result
 	}
 	if length > 0 {
-		a := uint8(s[0])
-		b := uint8(s[length>>1])
-		c := uint8(s[length-1])
+		a := s[0]
+		b := s[length>>1]
+		c := s[length-1]
 		y := uint32(a) + (uint32(b) << 8)
 		z := uint32(length) + (uint32(c) << 2)
 		return shiftMix(uint64(y)*k2^uint64(z)*k0) * k2
@@ -170,7 +170,7 @@ func Hash64(s []byte) uint64 {
 
 	// Decrease len to the nearest multiple of 64, and operate on 64-byte chunks.
 	tmpLength := uint32(length)
-	tmpLength = uint32(tmpLength-1) & ^uint32(63)
+	tmpLength = (tmpLength - 1) & ^uint32(63)
 	for {
 		x = rotate(x+y+v.Low+fetch64(s[8:]), 37) * k1
 		y = rotate(y+v.High+fetch64(s[48:]), 42) * k1

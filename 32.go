@@ -44,10 +44,6 @@ func rotate32(val uint32, shift int) uint32 {
 	return (val >> uint32(shift)) | (val << (32 - uint32(shift)))
 }
 
-func permute3(a, b, c uint32) (uint32, uint32, uint32) {
-	return c, a, b
-}
-
 func mur(a, h uint32) uint32 {
 	// Helper from Murmur3 for combining two 32-bit values.
 	a *= c1
@@ -95,9 +91,11 @@ func Hash32(s []byte) uint32 {
 	length := len(s)
 	if length <= 4 {
 		return hash32Len0to4(s, length)
-	} else if length <= 12 {
+	}
+	if length <= 12 {
 		return hash32Len5to12(s, length)
-	} else if length <= 24 {
+	}
+	if length <= 24 {
 		return hash32Len13to24(s, length)
 	}
 
@@ -149,7 +147,7 @@ func Hash32(s []byte) uint32 {
 		h += a4 * 5
 		h = bswap32(h)
 		f += a0
-		f, h, g = permute3(f, h, g)
+		f, h, g = g, f, h
 		s = s[20:]
 
 		iters--

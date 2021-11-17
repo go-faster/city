@@ -16,7 +16,7 @@ var (
 	data    [dataSize]byte
 )
 
-// Initalize data to pseudorandom values.
+// Initialize data to pseudorandom value.
 func setup() {
 	a := uint64(9)
 	b := uint64(777)
@@ -1864,6 +1864,9 @@ func TestCityHash(t *testing.T) {
 func BenchmarkCityHash32(b *testing.B) {
 	setup()
 	b.ResetTimer()
+	b.ReportAllocs()
+	b.SetBytes(1024)
+
 	for i := 0; i < b.N; i++ {
 		Hash32(data[:1024])
 	}
@@ -1872,6 +1875,9 @@ func BenchmarkCityHash32(b *testing.B) {
 func BenchmarkCityHash64(b *testing.B) {
 	setup()
 	b.ResetTimer()
+	b.ReportAllocs()
+	b.SetBytes(1024)
+
 	for i := 0; i < b.N; i++ {
 		Hash64(data[:1024])
 	}
