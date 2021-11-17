@@ -20,6 +20,17 @@ func (u U128) Arr() (v [16]byte) {
 	return v
 }
 
+// Append appends uint128 big value to buf in big endian.
+//
+// Append is much faster that appending Arr result.
+func (u U128) Append(buf []byte) []byte {
+	s := len(buf)
+	buf = append(buf, make([]byte, 16)...)
+	binary.BigEndian.PutUint64(buf[s:], u.Low)
+	binary.BigEndian.PutUint64(buf[s+8:], u.High)
+	return buf
+}
+
 func (u U128) String() string {
 	return fmt.Sprintf("%x", u.Arr())
 }
