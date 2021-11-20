@@ -14,20 +14,20 @@ func chMurmur(s []byte, seed U128) U128 {
 		c = b*k1 + ch0to16(s, length)
 
 		if length >= 8 {
-			d = shiftMix(a + fetch64(s))
+			d = shiftMix(a + u64(s))
 		} else {
 			d = shiftMix(a + c)
 		}
 	} else { // length > 16
-		c = ch16(fetch64(s[length-8:])+k1, a)
-		d = ch16(b+uint64(length), c+fetch64(s[length-16:]))
+		c = ch16(u64(s[length-8:])+k1, a)
+		d = ch16(b+uint64(length), c+u64(s[length-16:]))
 		a += d
 
 		for {
-			a ^= shiftMix(fetch64(s)*k1) * k1
+			a ^= shiftMix(u64(s)*k1) * k1
 			a *= k1
 			b ^= a
-			c ^= shiftMix(fetch64(s[8:])*k1) * k1
+			c ^= shiftMix(u64(s[8:])*k1) * k1
 			c *= k1
 			d ^= c
 			s = s[16:]
@@ -47,15 +47,15 @@ func chMurmur(s []byte, seed U128) U128 {
 func CH128(s []byte) U128 {
 	if len(s) >= 16 {
 		return CH128Seed(s[16:], U128{
-			Low:  fetch64(s) ^ k3,
-			High: fetch64(s[8:]),
+			Low:  u64(s) ^ k3,
+			High: u64(s[8:]),
 		})
 	}
 	if len(s) >= 8 {
 		l := uint64(len(s))
 		return CH128Seed(nil, U128{
-			Low:  fetch64(s) ^ (l * k0),
-			High: fetch64(s[l-8:]) ^ k1,
+			Low:  u64(s) ^ (l * k0),
+			High: u64(s[l-8:]) ^ k1,
 		})
 	}
 	return CH128Seed(s, U128{Low: k0, High: k1})
@@ -77,35 +77,35 @@ func CH128Seed(s []byte, seed U128) U128 {
 	y := seed.High
 	z := uint64(len(s)) * k1
 
-	v.Low = rotate(y^k1, 49)*k1 + fetch64(s)
-	v.High = rotate(v.Low, 42)*k1 + fetch64(s[8:])
-	w.Low = rotate(y+z, 35)*k1 + x
-	w.High = rotate(x+fetch64(s[88:]), 53) * k1
+	v.Low = rot64(y^k1, 49)*k1 + u64(s)
+	v.High = rot64(v.Low, 42)*k1 + u64(s[8:])
+	w.Low = rot64(y+z, 35)*k1 + x
+	w.High = rot64(x+u64(s[88:]), 53) * k1
 
 	// This is the same inner loop as CH64(), manually unrolled.
 	for {
 		// Roll 1.
-		x = rotate(x+y+v.Low+fetch64(s[16:]), 37) * k1
-		y = rotate(y+v.High+fetch64(s[48:]), 42) * k1
+		x = rot64(x+y+v.Low+u64(s[16:]), 37) * k1
+		y = rot64(y+v.High+u64(s[48:]), 42) * k1
 
 		x ^= w.High
 		y ^= v.Low
 
-		z = rotate(z^w.Low, 33)
-		v = weakHashLen32WithSeedsByte(s, v.High*k1, x+w.Low)
-		w = weakHashLen32WithSeedsByte(s[32:], z+w.High, y)
+		z = rot64(z^w.Low, 33)
+		v = weakHash32SeedsByte(s, v.High*k1, x+w.Low)
+		w = weakHash32SeedsByte(s[32:], z+w.High, y)
 		z, x = x, z
 		s = s[64:]
 
 		// Roll 2.
-		x = rotate(x+y+v.Low+fetch64(s[16:]), 37) * k1
-		y = rotate(y+v.High+fetch64(s[48:]), 42) * k1
+		x = rot64(x+y+v.Low+u64(s[16:]), 37) * k1
+		y = rot64(y+v.High+u64(s[48:]), 42) * k1
 		x ^= w.High
 		y ^= v.Low
 
-		z = rotate(z^w.Low, 33)
-		v = weakHashLen32WithSeedsByte(s, v.High*k1, x+w.Low)
-		w = weakHashLen32WithSeedsByte(s[32:], z+w.High, y)
+		z = rot64(z^w.Low, 33)
+		v = weakHash32SeedsByte(s, v.High*k1, x+w.Low)
+		w = weakHash32SeedsByte(s[32:], z+w.High, y)
 		z, x = x, z
 		s = s[64:]
 
@@ -114,18 +114,18 @@ func CH128Seed(s []byte, seed U128) U128 {
 		}
 	}
 
-	y += rotate(w.Low, 37)*k0 + z
-	x += rotate(v.Low+z, 49) * k0
+	y += rot64(w.Low, 37)*k0 + z
+	x += rot64(v.Low+z, 49) * k0
 
 	// If 0 < length < 128, hash up to 4 chunks of 32 bytes each from the end of s.
 	for i := 0; i < len(s); {
 		i += 32
-		y = rotate(y-x, 42)*k0 + v.High
+		y = rot64(y-x, 42)*k0 + v.High
 
-		w.Low += fetch64(t[len(t)-i+16:])
-		x = rotate(x, 49)*k0 + w.Low
+		w.Low += u64(t[len(t)-i+16:])
+		x = rot64(x, 49)*k0 + w.Low
 		w.Low += v.Low
-		v = weakHashLen32WithSeedsByte(t[len(t)-i:], v.Low, v.High)
+		v = weakHash32SeedsByte(t[len(t)-i:], v.Low, v.High)
 	}
 
 	// At this point our 48 bytes of state should contain more than

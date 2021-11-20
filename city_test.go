@@ -1919,12 +1919,12 @@ func BenchmarkCityHash128Small(b *testing.B) {
 func TestRotate(t *testing.T) {
 	t.Run("32", func(t *testing.T) {
 		if rotate32(100, 0) != 100 {
-			t.Error("unexpected rotate")
+			t.Error("unexpected rot64")
 		}
 	})
 	t.Run("64", func(t *testing.T) {
-		if rotate(100, 0) != 100 {
-			t.Error("unexpected rotate")
+		if rot64(100, 0) != 100 {
+			t.Error("unexpected rot64")
 		}
 	})
 }

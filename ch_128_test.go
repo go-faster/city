@@ -29,7 +29,7 @@ func TestCH128(t *testing.T) {
 	}
 }
 
-func BenchmarkCH128(b *testing.B) {
+func BenchmarkClickHouse128(b *testing.B) {
 	setup()
 	b.ResetTimer()
 

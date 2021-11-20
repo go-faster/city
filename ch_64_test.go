@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func BenchmarkCH64(b *testing.B) {
+func BenchmarkClickHouse64(b *testing.B) {
 	setup()
 	b.ResetTimer()
 	b.ReportAllocs()
