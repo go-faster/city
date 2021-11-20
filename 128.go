@@ -37,7 +37,8 @@ func (u U128) String() string {
 
 // A subroutine for Hash128(). Returns a decent 128-bit hash for strings
 // of any length representable in signed long. Based on City and Mumur.
-func cityMurmur(s []byte, length int, seed U128) U128 {
+func cityMurmur(s []byte, seed U128) U128 {
+	length := len(s)
 	a := seed.Low
 	b := seed.High
 	c := uint64(0)
@@ -77,20 +78,19 @@ func cityMurmur(s []byte, length int, seed U128) U128 {
 
 // Hash128Seed return a 128-bit hash with a seed.
 func Hash128Seed(s []byte, seed U128) U128 {
-	length := len(s)
-	if length < 128 {
-		return cityMurmur(s, length, seed)
+	if len(s) < 128 {
+		return cityMurmur(s, seed)
 	}
 
-	savedLength := length
-	savedS := s
+	// Saving initial input for tail hashing.
+	t := s
 
 	// We expect len >= 128 to be the common case. Keep 56 bytes of state:
 	// v, w, x, y and z.
 	var v, w U128
 	x := seed.Low
 	y := seed.High
-	z := uint64(length) * k1
+	z := uint64(len(s)) * k1
 
 	v.Low = rot64(y^k1, 49)*k1 + u64(s)
 	v.High = rot64(v.Low, 42)*k1 + u64(s[8:])
@@ -98,7 +98,8 @@ func Hash128Seed(s []byte, seed U128) U128 {
 	w.High = rot64(x+u64(s[88:]), 53) * k1
 
 	// This is the same inner loop as Hash64(), manually unrolled.
-	for {
+	for len(s) >= 128 {
+		// Roll 1.
 		x = rot64(x+y+v.Low+u64(s[8:]), 37) * k1
 		y = rot64(y+v.High+u64(s[48:]), 42) * k1
 		x ^= w.High
@@ -108,6 +109,8 @@ func Hash128Seed(s []byte, seed U128) U128 {
 		w = weakHash32SeedsByte(s[32:], z+w.High, y+u64(s[16:]))
 		z, x = x, z
 		s = s[64:]
+
+		// Roll 2.
 		x = rot64(x+y+v.Low+u64(s[8:]), 37) * k1
 		y = rot64(y+v.High+u64(s[48:]), 42) * k1
 		x ^= w.High
@@ -117,26 +120,23 @@ func Hash128Seed(s []byte, seed U128) U128 {
 		w = weakHash32SeedsByte(s[32:], z+w.High, y+u64(s[16:]))
 		z, x = x, z
 		s = s[64:]
-		length -= 128
-		if length < 128 {
-			break
-		}
 	}
+
 	x += rot64(v.Low+z, 49) * k0
 	y = y*k0 + rot64(w.High, 37)
 	z = z*k0 + rot64(w.Low, 27)
 	w.Low *= 9
 	v.Low *= k0
-	// If 0 < length < 128, hash up to 4 chunks of 32 bytes each form the end
-	// of s.
-	for tailDone := 0; tailDone < length; {
-		tailDone += 32
+
+	// If 0 < length < 128, hash up to 4 chunks of 32 bytes each from the end of s.
+	for i := 0; i < len(s); {
+		i += 32
 		y = rot64(x+y, 42)*k0 + v.High
-		w.Low += u64(savedS[savedLength-tailDone+16:])
+		w.Low += u64(t[len(t)-i+16:])
 		x = x*k0 + w.Low
-		z += w.High + u64(savedS[savedLength-tailDone:])
+		z += w.High + u64(t[len(t)-i:])
 		w.High += v.Low
-		v = weakHash32SeedsByte(savedS[savedLength-tailDone:], v.Low+z, v.High)
+		v = weakHash32SeedsByte(t[len(t)-i:], v.Low+z, v.High)
 		v.Low *= k0
 	}
 
@@ -145,7 +145,11 @@ func Hash128Seed(s []byte, seed U128) U128 {
 	// 56-byte-to-8-byte hashes to get a 16-byte final result.
 	x = hash16(x, v.Low)
 	y = hash16(y+z, w.Low)
-	return U128{hash16(x+v.High, w.High) + y, hash16(x+w.High, y+v.High)}
+
+	return U128{
+		Low:  hash16(x+v.High, w.High) + y,
+		High: hash16(x+w.High, y+v.High),
+	}
 }
 
 // Hash128 returns a 128-bit hash and are tuned for strings of at least
@@ -154,11 +158,11 @@ func Hash128Seed(s []byte, seed U128) U128 {
 // It's slower than necessary on shorter strings, but we expect
 // that case to be relatively unimportant.
 func Hash128(s []byte) U128 {
-	length := len(s)
-	if length >= 16 {
-		return Hash128Seed(s[16:length], U128{
-			u64(s),
-			u64(s[8:]) + k0})
+	if len(s) >= 16 {
+		return Hash128Seed(s[16:], U128{
+			Low:  u64(s),
+			High: u64(s[8:]) + k0},
+		)
 	}
-	return Hash128Seed(s, U128{k0, k1})
+	return Hash128Seed(s, U128{Low: k0, High: k1})
 }

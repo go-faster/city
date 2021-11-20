@@ -83,7 +83,7 @@ func CH128Seed(s []byte, seed U128) U128 {
 	w.High = rot64(x+u64(s[88:]), 53) * k1
 
 	// This is the same inner loop as CH64(), manually unrolled.
-	for {
+	for len(s) >= 128 {
 		// Roll 1.
 		x = rot64(x+y+v.Low+u64(s[16:]), 37) * k1
 		y = rot64(y+v.High+u64(s[48:]), 42) * k1
@@ -108,10 +108,6 @@ func CH128Seed(s []byte, seed U128) U128 {
 		w = weakHash32SeedsByte(s[32:], z+w.High, y)
 		z, x = x, z
 		s = s[64:]
-
-		if len(s) < 128 {
-			break
-		}
 	}
 
 	y += rot64(w.Low, 37)*k0 + z
@@ -121,7 +117,6 @@ func CH128Seed(s []byte, seed U128) U128 {
 	for i := 0; i < len(s); {
 		i += 32
 		y = rot64(y-x, 42)*k0 + v.High
-
 		w.Low += u64(t[len(t)-i+16:])
 		x = rot64(x, 49)*k0 + w.Low
 		w.Low += v.Low
