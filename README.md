@@ -1,6 +1,8 @@
 # city [![](https://img.shields.io/badge/go-pkg-00ADD8)](https://pkg.go.dev/github.com/go-faster/city#section-documentation) [![](https://img.shields.io/codecov/c/github/go-faster/city?label=cover)](https://codecov.io/gh/go-faster/city) [![alpha](https://img.shields.io/badge/-alpha-orange)](https://go-faster.org/docs/projects/status#alpha)
 [CityHash](https://github.com/google/cityhash) in Go. Fork of [tenfyzhong/cityhash](https://github.com/tenfyzhong/cityhash).
 
+Note that CityHash **is not compatible** to [FarmHash](https://github.com/google/farmhash), use [go-farm](https://github.com/dgryski/go-farm) for it.
+
 ```console
 go get github.com/go-faster/city
 ```
