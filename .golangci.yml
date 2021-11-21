@@ -106,3 +106,6 @@ issues:
     - path: main\.go
       linters: [ goconst, funlen, gocognit, gocyclo ]
 
+    # Ignore run-once generator
+    - path: citygen
+      linters: [ revive, gosec ]

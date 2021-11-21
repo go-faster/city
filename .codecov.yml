@@ -1,3 +1,6 @@
+ignore:
+  # We have only auxiliary binaries in internal/ no actual user-facing code.
+  - internal/**
 coverage:
   status:
     patch: false
