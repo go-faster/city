@@ -27,7 +27,7 @@ func ExampleHash64() {
 func ExampleHash128() {
 	fmt.Println(city.Hash128([]byte("hello")))
 
-	// Output: 6f72e4abb491a74a65148f580b45f347
+	// Output: {8030732511675000650 7283604105673962311}
 }
 
 func ExampleCH64() {

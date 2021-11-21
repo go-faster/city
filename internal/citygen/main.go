@@ -10,19 +10,19 @@ import (
 )
 
 type Entry struct {
-	Input             string `json:"input"`
-	City32            uint32 `json:"city_32"`
-	City64            uint64 `json:"city_64,string"`
-	City128           []byte `json:"city_128"`
-	City128Seed       []byte `json:"city_128_seed"`
-	ClickHouse64      uint64 `json:"clickhouse_64,string"`
-	ClickHouse128     []byte `json:"clickhouse_128"`
-	ClickHouse128Seed []byte `json:"clickhouse_128_seed"`
+	Input             string
+	City32            uint32
+	City64            uint64 `json:",string"`
+	City128           city.U128
+	City128Seed       city.U128
+	ClickHouse64      uint64 `json:",string"`
+	ClickHouse128     city.U128
+	ClickHouse128Seed city.U128
 }
 
 type Data struct {
-	Seed    []byte  `json:"seed"`
-	Entries []Entry `json:"entries"`
+	Seed    city.U128
+	Entries []Entry
 }
 
 type testDataStruct struct {
@@ -93,7 +93,7 @@ func main() {
 		Low: uint64(rand.Int63()), High: uint64(rand.Int63()),
 	}
 	d := Data{
-		Seed: seed.Bytes(),
+		Seed: seed,
 	}
 	inputs := []string{
 		"Moscow",
@@ -115,11 +115,11 @@ func main() {
 			Input:             in,
 			City32:            city.Hash32(s),
 			City64:            city.Hash64(s),
-			City128:           city.Hash128(s).Bytes(),
-			City128Seed:       city.Hash128Seed(s, seed).Bytes(),
+			City128:           city.Hash128(s),
+			City128Seed:       city.Hash128Seed(s, seed),
 			ClickHouse64:      city.CH64(s),
-			ClickHouse128:     city.CH128(s).Bytes(),
-			ClickHouse128Seed: city.CH128Seed(s, seed).Bytes(),
+			ClickHouse128:     city.CH128(s),
+			ClickHouse128Seed: city.CH128Seed(s, seed),
 		}
 		d.Entries = append(d.Entries, e)
 	}
