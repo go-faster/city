@@ -1,8 +1,7 @@
 package city
 
 import (
-	"encoding/binary"
-	"fmt"
+	"encoding/hex"
 )
 
 // U128 is uint128.
@@ -13,26 +12,64 @@ type U128 struct {
 	// much faster than uint64[2]
 }
 
+// Put U128 to buffer.
+func (u U128) Put(b []byte) {
+	_ = b[15] // bounds check; see golang.org/issue/14808
+
+	b[0] = byte(u.Low >> 56)
+	b[1] = byte(u.Low >> 48)
+	b[2] = byte(u.Low >> 40)
+	b[3] = byte(u.Low >> 32)
+	b[4] = byte(u.Low >> 24)
+	b[5] = byte(u.Low >> 16)
+	b[6] = byte(u.Low >> 8)
+	b[7] = byte(u.Low)
+
+	b[8] = byte(u.High >> 56)
+	b[9] = byte(u.High >> 48)
+	b[10] = byte(u.High >> 40)
+	b[11] = byte(u.High >> 32)
+	b[12] = byte(u.High >> 24)
+	b[13] = byte(u.High >> 16)
+	b[14] = byte(u.High >> 8)
+	b[15] = byte(u.High)
+}
+
 // Arr returns byte array that represents uint128 value of U128 in big endian.
 func (u U128) Arr() (v [16]byte) {
-	binary.BigEndian.PutUint64(v[:8], u.Low)
-	binary.BigEndian.PutUint64(v[8:], u.High)
+	u.Put(v[:])
 	return v
+}
+
+// Bytes returns new byte slice for U128.
+func (u U128) Bytes() []byte {
+	v := make([]byte, 16)
+	u.Put(v)
+	return v
+}
+
+// Set U128 from byte slice.
+func (u *U128) Set(b []byte) {
+	_ = b[15] // bounds check; see golang.org/issue/14808
+
+	u.Low = uint64(b[7]) | uint64(b[6])<<8 | uint64(b[5])<<16 | uint64(b[4])<<24 |
+		uint64(b[3])<<32 | uint64(b[2])<<40 | uint64(b[1])<<48 | uint64(b[0])<<56
+
+	u.High = uint64(b[15]) | uint64(b[14])<<8 | uint64(b[13])<<16 | uint64(b[12])<<24 |
+		uint64(b[11])<<32 | uint64(b[10])<<40 | uint64(b[9])<<48 | uint64(b[8])<<56
 }
 
 // Append appends uint128 big value to buf in big endian.
 //
 // Append is much faster that appending Arr result.
 func (u U128) Append(buf []byte) []byte {
-	s := len(buf)
-	buf = append(buf, make([]byte, 16)...)
-	binary.BigEndian.PutUint64(buf[s:], u.Low)
-	binary.BigEndian.PutUint64(buf[s+8:], u.High)
-	return buf
+	v := make([]byte, 16)
+	u.Put(v)
+	return append(buf, v...)
 }
 
 func (u U128) String() string {
-	return fmt.Sprintf("%x", u.Arr())
+	return hex.EncodeToString(u.Bytes())
 }
 
 // A subroutine for Hash128(). Returns a decent 128-bit hash for strings
