@@ -104,7 +104,7 @@ func main() {
 		inputs = append(inputs, v.in)
 	}
 
-	for i := 0; i < 256; i++ {
+	for i := 0; i < 10; i++ {
 		l := rand.Intn(256) + 1
 		inputs = append(inputs, randStr(l))
 	}
