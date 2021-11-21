@@ -12,10 +12,10 @@ import (
 type Entry struct {
 	Input             string
 	City32            uint32
-	City64            uint64 `json:",string"`
+	City64            uint64
 	City128           city.U128
 	City128Seed       city.U128
-	ClickHouse64      uint64 `json:",string"`
+	ClickHouse64      uint64
 	ClickHouse128     city.U128
 	ClickHouse128Seed city.U128
 }
