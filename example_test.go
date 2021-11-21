@@ -29,3 +29,25 @@ func ExampleHash128() {
 
 	// Output: 6f72e4abb491a74a65148f580b45f347
 }
+
+func ExampleCH64() {
+	// See https://github.com/ClickHouse/ClickHouse/issues/8354
+	/*
+		SELECT cityHash64('Moscow')
+		┌─cityHash64('Moscow')─┐
+		│ 12507901496292878638 │
+		└──────────────────────┘
+		SELECT farmHash64('Moscow')
+		┌─farmHash64('Moscow')─┐
+		│  5992710078453357409 │
+		└──────────────────────┘
+	*/
+	s := []byte("Moscow")
+	fmt.Print("ClickHouse: ")
+	fmt.Println(city.CH64(s))
+	fmt.Print("CityHash:   ")
+	fmt.Println(city.Hash64(s))
+	// Output:
+	// ClickHouse: 12507901496292878638
+	// CityHash:   5992710078453357409
+}
