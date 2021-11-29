@@ -4,8 +4,8 @@ package city
 
 // U128 is uint128.
 type U128 struct {
-	Low  uint64 // first 32 bits
-	High uint64 // last 32 bits
+	Low  uint64 // first 64 bits
+	High uint64 // last 64 bits
 }
 
 // A subroutine for Hash128(). Returns a decent 128-bit hash for strings
