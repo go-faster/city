@@ -115,11 +115,12 @@ func weakHash32Seeds(w, x, y, z, a, b uint64) U128 {
 
 // Return a 16-byte hash for s[0] ... s[31], a, and b. Quick and dirty.
 func weakHash32SeedsByte(s []byte, a, b uint64) U128 {
+	_ = s[31]
 	return weakHash32Seeds(
-		u64(s),
-		u64(s[8:]),
-		u64(s[16:]),
-		u64(s[24:]),
+		u64(s[0:0+8:0+8]),
+		u64(s[8:8+8:8+8]),
+		u64(s[16:16+8:16+8]),
+		u64(s[24:24+8:24+8]),
 		a,
 		b,
 	)
