@@ -1,5 +1,7 @@
 package city
 
+import "encoding/binary"
+
 // A subroutine for CH128(). Returns a decent 128-bit hash for strings
 // of any length representable in signed long. Based on City and Mumur.
 func chMurmur(s []byte, seed U128) U128 {
@@ -14,20 +16,20 @@ func chMurmur(s []byte, seed U128) U128 {
 		c = b*k1 + ch0to16(s, length)
 
 		if length >= 8 {
-			d = shiftMix(a + u64(s))
+			d = shiftMix(a + binary.LittleEndian.Uint64(s))
 		} else {
 			d = shiftMix(a + c)
 		}
 	} else { // length > 16
-		c = ch16(u64(s[length-8:])+k1, a)
-		d = ch16(b+uint64(length), c+u64(s[length-16:]))
+		c = ch16(binary.LittleEndian.Uint64(s[length-8:])+k1, a)
+		d = ch16(b+uint64(length), c+binary.LittleEndian.Uint64(s[length-16:]))
 		a += d
 
 		for {
-			a ^= shiftMix(u64(s)*k1) * k1
+			a ^= shiftMix(binary.LittleEndian.Uint64(s)*k1) * k1
 			a *= k1
 			b ^= a
-			c ^= shiftMix(u64(s[8:])*k1) * k1
+			c ^= shiftMix(binary.LittleEndian.Uint64(s[8:])*k1) * k1
 			c *= k1
 			d ^= c
 			s = s[16:]
@@ -47,15 +49,15 @@ func chMurmur(s []byte, seed U128) U128 {
 func CH128(s []byte) U128 {
 	if len(s) >= 16 {
 		return CH128Seed(s[16:], U128{
-			Low:  u64(s) ^ k3,
-			High: u64(s[8:]),
+			Low:  binary.LittleEndian.Uint64(s) ^ k3,
+			High: binary.LittleEndian.Uint64(s[8:]),
 		})
 	}
 	if len(s) >= 8 {
 		l := uint64(len(s))
 		return CH128Seed(nil, U128{
-			Low:  u64(s) ^ (l * k0),
-			High: u64(s[l-8:]) ^ k1,
+			Low:  binary.LittleEndian.Uint64(s) ^ (l * k0),
+			High: binary.LittleEndian.Uint64(s[l-8:]) ^ k1,
 		})
 	}
 	return CH128Seed(s, U128{Low: k0, High: k1})
@@ -77,16 +79,16 @@ func CH128Seed(s []byte, seed U128) U128 {
 	y := seed.High
 	z := uint64(len(s)) * k1
 
-	v.Low = rot64(y^k1, 49)*k1 + u64(s)
-	v.High = rot64(v.Low, 42)*k1 + u64(s[8:])
+	v.Low = rot64(y^k1, 49)*k1 + binary.LittleEndian.Uint64(s)
+	v.High = rot64(v.Low, 42)*k1 + binary.LittleEndian.Uint64(s[8:])
 	w.Low = rot64(y+z, 35)*k1 + x
-	w.High = rot64(x+u64(s[88:]), 53) * k1
+	w.High = rot64(x+binary.LittleEndian.Uint64(s[88:]), 53) * k1
 
 	// This is the same inner loop as CH64(), manually unrolled.
 	for len(s) >= 128 {
 		// Roll 1.
-		x = rot64(x+y+v.Low+u64(s[16:]), 37) * k1
-		y = rot64(y+v.High+u64(s[48:]), 42) * k1
+		x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[16:]), 37) * k1
+		y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:]), 42) * k1
 
 		x ^= w.High
 		y ^= v.Low
@@ -98,8 +100,8 @@ func CH128Seed(s []byte, seed U128) U128 {
 		s = s[64:]
 
 		// Roll 2.
-		x = rot64(x+y+v.Low+u64(s[16:]), 37) * k1
-		y = rot64(y+v.High+u64(s[48:]), 42) * k1
+		x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[16:]), 37) * k1
+		y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:]), 42) * k1
 		x ^= w.High
 		y ^= v.Low
 
@@ -117,7 +119,7 @@ func CH128Seed(s []byte, seed U128) U128 {
 	for i := 0; i < len(s); {
 		i += 32
 		y = rot64(y-x, 42)*k0 + v.High
-		w.Low += u64(t[len(t)-i+16:])
+		w.Low += binary.LittleEndian.Uint64(t[len(t)-i+16:])
 		x = rot64(x, 49)*k0 + w.Low
 		w.Low += v.Low
 		v = weakHash32SeedsByte(t[len(t)-i:], v.Low, v.High)

@@ -13,11 +13,6 @@ func bswap64(x uint64) uint64 {
 		((x & 0x00000000000000ff) << 56)
 }
 
-// u64 reads uint64 in little endian from p.
-func u64(p []byte) uint64 {
-	return binary.LittleEndian.Uint64(p)
-}
-
 // Bitwise right rotate.
 func rot64(val uint64, shift uint) uint64 {
 	// Avoid shifting by 64: doing so yields an undefined result.
@@ -58,8 +53,8 @@ func hash16mul(u, v, mul uint64) uint64 {
 func hash0to16(s []byte, length int) uint64 {
 	if length >= 8 {
 		mul := k2 + uint64(length)*2
-		a := u64(s) + k2
-		b := u64(s[length-8:])
+		a := binary.LittleEndian.Uint64(s) + k2
+		b := binary.LittleEndian.Uint64(s[length-8:])
 		c := rot64(b, 37)*mul + a
 		d := (rot64(a, 25) + b) * mul
 		return hash16mul(c, d, mul)
@@ -90,10 +85,10 @@ func hash0to16(s []byte, length int) uint64 {
 // in that case
 func hash17to32(s []byte, length int) uint64 {
 	mul := k2 + uint64(length)*2
-	a := u64(s) * k1
-	b := u64(s[8:])
-	c := u64(s[length-8:]) * mul
-	d := u64(s[length-16:]) * k2
+	a := binary.LittleEndian.Uint64(s) * k1
+	b := binary.LittleEndian.Uint64(s[8:])
+	c := binary.LittleEndian.Uint64(s[length-8:]) * mul
+	d := binary.LittleEndian.Uint64(s[length-16:]) * k2
 	return hash16mul(
 		rot64(a+b, 43)+rot64(c, 30)+d,
 		a+rot64(b+k2, 18)+c,
@@ -117,10 +112,10 @@ func weakHash32Seeds(w, x, y, z, a, b uint64) U128 {
 func weakHash32SeedsByte(s []byte, a, b uint64) U128 {
 	_ = s[31]
 	return weakHash32Seeds(
-		u64(s[0:0+8:0+8]),
-		u64(s[8:8+8:8+8]),
-		u64(s[16:16+8:16+8]),
-		u64(s[24:24+8:24+8]),
+		binary.LittleEndian.Uint64(s[0:0+8:0+8]),
+		binary.LittleEndian.Uint64(s[8:8+8:8+8]),
+		binary.LittleEndian.Uint64(s[16:16+8:16+8]),
+		binary.LittleEndian.Uint64(s[24:24+8:24+8]),
 		a,
 		b,
 	)
@@ -129,14 +124,14 @@ func weakHash32SeedsByte(s []byte, a, b uint64) U128 {
 // Return an 8-byte hash for 33 to 64 bytes.
 func hash33to64(s []byte, length int) uint64 {
 	mul := k2 + uint64(length)*2
-	a := u64(s) * k2
-	b := u64(s[8:])
-	c := u64(s[length-24:])
-	d := u64(s[length-32:])
-	e := u64(s[16:]) * k2
-	f := u64(s[24:]) * 9
-	g := u64(s[length-8:])
-	h := u64(s[length-16:]) * mul
+	a := binary.LittleEndian.Uint64(s) * k2
+	b := binary.LittleEndian.Uint64(s[8:])
+	c := binary.LittleEndian.Uint64(s[length-24:])
+	d := binary.LittleEndian.Uint64(s[length-32:])
+	e := binary.LittleEndian.Uint64(s[16:]) * k2
+	f := binary.LittleEndian.Uint64(s[24:]) * 9
+	g := binary.LittleEndian.Uint64(s[length-8:])
+	h := binary.LittleEndian.Uint64(s[length-16:]) * mul
 	u := rot64(a+g, 43) + (rot64(b, 30)+c)*9
 	v := ((a + g) ^ d) + f + 1
 	w := bswap64((u+v)*mul) + h
@@ -169,23 +164,23 @@ func Hash64(s []byte) uint64 {
 
 	// For string over 64 bytes we hash the end first, and then as we
 	// loop we keep 56 bytes of state: v, w, x, y and z.
-	x := u64(s[length-40:])
-	y := u64(s[length-16:]) + u64(s[length-56:])
-	z := hash16(u64(s[length-48:])+uint64(length), u64(s[length-24:]))
+	x := binary.LittleEndian.Uint64(s[length-40:])
+	y := binary.LittleEndian.Uint64(s[length-16:]) + binary.LittleEndian.Uint64(s[length-56:])
+	z := hash16(binary.LittleEndian.Uint64(s[length-48:])+uint64(length), binary.LittleEndian.Uint64(s[length-24:]))
 	v := weakHash32SeedsByte(s[length-64:], uint64(length), z)
 	w := weakHash32SeedsByte(s[length-32:], y+k1, x)
-	x = x*k1 + u64(s)
+	x = x*k1 + binary.LittleEndian.Uint64(s)
 
 	// Decrease len to the nearest multiple of 64, and operate on 64-byte chunks.
 	s = s[:nearestMultiple64(s)]
 	for len(s) > 0 {
-		x = rot64(x+y+v.Low+u64(s[8:]), 37) * k1
-		y = rot64(y+v.High+u64(s[48:]), 42) * k1
+		x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[8:]), 37) * k1
+		y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:]), 42) * k1
 		x ^= w.High
-		y += v.Low + u64(s[40:])
+		y += v.Low + binary.LittleEndian.Uint64(s[40:])
 		z = rot64(z+w.Low, 33) * k1
 		v = weakHash32SeedsByte(s, v.High*k1, x+w.Low)
-		w = weakHash32SeedsByte(s[32:], z+w.High, y+u64(s[16:]))
+		w = weakHash32SeedsByte(s[32:], z+w.High, y+binary.LittleEndian.Uint64(s[16:]))
 
 		z, x = x, z
 		s = s[64:]
