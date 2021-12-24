@@ -32,7 +32,7 @@ CityHash128-32  2.95GB/s ± 2%  9.14GB/s ± 2%  +209.98%  (p=0.000 n=9+10)
 goos: linux
 goarch: amd64
 pkg: github.com/go-faster/city
-cpu: AMD Ryzen 9 5950X 16-Core Processor            
+cpu: AMD Ryzen 9 5950X 16-Core Processor
 BenchmarkClickHouse128/16     2213.98 MB/s
 BenchmarkClickHouse128/64     4712.24 MB/s
 BenchmarkClickHouse128/256    7561.58 MB/s
