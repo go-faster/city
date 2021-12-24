@@ -87,29 +87,33 @@ func CH128Seed(s []byte, seed U128) U128 {
 	// This is the same inner loop as CH64(), manually unrolled.
 	for len(s) >= 128 {
 		// Roll 1.
-		x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[16:]), 37) * k1
-		y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:]), 42) * k1
+		{
+			x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[16:]), 37) * k1
+			y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:]), 42) * k1
 
-		x ^= w.High
-		y ^= v.Low
+			x ^= w.High
+			y ^= v.Low
 
-		z = rot64(z^w.Low, 33)
-		v = weakHash32SeedsByte(s, v.High*k1, x+w.Low)
-		w = weakHash32SeedsByte(s[32:], z+w.High, y)
-		z, x = x, z
-		s = s[64:]
+			z = rot64(z^w.Low, 33)
+			v = weakHash32SeedsByte(s, v.High*k1, x+w.Low)
+			w = weakHash32SeedsByte(s[32:], z+w.High, y)
+			z, x = x, z
+		}
 
 		// Roll 2.
-		x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[16:]), 37) * k1
-		y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:]), 42) * k1
-		x ^= w.High
-		y ^= v.Low
+		{
+			const offset = 64
+			x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[offset+16:]), 37) * k1
+			y = rot64(y+v.High+binary.LittleEndian.Uint64(s[offset+48:]), 42) * k1
+			x ^= w.High
+			y ^= v.Low
 
-		z = rot64(z^w.Low, 33)
-		v = weakHash32SeedsByte(s, v.High*k1, x+w.Low)
-		w = weakHash32SeedsByte(s[32:], z+w.High, y)
-		z, x = x, z
-		s = s[64:]
+			z = rot64(z^w.Low, 33)
+			v = weakHash32SeedsByte(s[offset:], v.High*k1, x+w.Low)
+			w = weakHash32SeedsByte(s[offset+32:], z+w.High, y)
+			z, x = x, z
+		}
+		s = s[128:]
 	}
 
 	y += rot64(w.Low, 37)*k0 + z
