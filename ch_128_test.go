@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	_ "embed"
+	"fmt"
 	"strconv"
 	"strings"
 	"testing"
@@ -29,14 +30,24 @@ func TestCH128(t *testing.T) {
 	}
 }
 
+func benchmarkClickHouse128(n int) func(b *testing.B) {
+	return func(b *testing.B) {
+		b.ReportAllocs()
+		b.SetBytes(int64(n))
+		b.ResetTimer()
+
+		for i := 0; i < b.N; i++ {
+			CH128(data[:n])
+		}
+	}
+}
+
 func BenchmarkClickHouse128(b *testing.B) {
 	setup()
-	b.ResetTimer()
 
-	b.ReportAllocs()
-	b.SetBytes(1024)
-
-	for i := 0; i < b.N; i++ {
-		CH128(data[:1024])
+	for _, size := range []int{
+		16, 64, 256, 1024,
+	} {
+		b.Run(fmt.Sprintf("%d", size), benchmarkClickHouse128(size))
 	}
 }

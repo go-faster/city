@@ -1,5 +1,7 @@
 package city
 
+import "encoding/binary"
+
 // Ref:
 // https://github.com/xzkostyan/python-cityhash/commit/f4091154ff2c6c0de11d5d6673b5007fdd6355ad
 
@@ -11,25 +13,25 @@ func ch16(u, v uint64) uint64 {
 
 // Return an 8-byte hash for 33 to 64 bytes.
 func ch33to64(s []byte, length int) uint64 {
-	z := u64(s[24:])
-	a := u64(s) + (uint64(length)+u64(s[length-16:]))*k0
+	z := binary.LittleEndian.Uint64(s[24:])
+	a := binary.LittleEndian.Uint64(s) + (uint64(length)+binary.LittleEndian.Uint64(s[length-16:]))*k0
 	b := rot64(a+z, 52)
 	c := rot64(a, 37)
 
-	a += u64(s[8:])
+	a += binary.LittleEndian.Uint64(s[8:])
 	c += rot64(a, 7)
-	a += u64(s[16:])
+	a += binary.LittleEndian.Uint64(s[16:])
 
 	vf := a + z
 	vs := b + rot64(a, 31) + c
 
-	a = u64(s[16:]) + u64(s[length-32:])
-	z = u64(s[length-8:])
+	a = binary.LittleEndian.Uint64(s[16:]) + binary.LittleEndian.Uint64(s[length-32:])
+	z = binary.LittleEndian.Uint64(s[length-8:])
 	b = rot64(a+z, 52)
 	c = rot64(a, 37)
-	a += u64(s[length-24:])
+	a += binary.LittleEndian.Uint64(s[length-24:])
 	c += rot64(a, 7)
-	a += u64(s[length-16:])
+	a += binary.LittleEndian.Uint64(s[length-16:])
 
 	wf := a + z
 	ws := b + rot64(a, 31) + c
@@ -38,10 +40,10 @@ func ch33to64(s []byte, length int) uint64 {
 }
 
 func ch17to32(s []byte, length int) uint64 {
-	a := u64(s) * k1
-	b := u64(s[8:])
-	c := u64(s[length-8:]) * k2
-	d := u64(s[length-16:]) * k0
+	a := binary.LittleEndian.Uint64(s) * k1
+	b := binary.LittleEndian.Uint64(s[8:])
+	c := binary.LittleEndian.Uint64(s[length-8:]) * k2
+	d := binary.LittleEndian.Uint64(s[length-16:]) * k0
 	return hash16(
 		rot64(a-b, 43)+rot64(c, 30)+d,
 		a+rot64(b^k3, 20)-c+uint64(length),
@@ -50,8 +52,8 @@ func ch17to32(s []byte, length int) uint64 {
 
 func ch0to16(s []byte, length int) uint64 {
 	if length > 8 {
-		a := u64(s)
-		b := u64(s[length-8:])
+		a := binary.LittleEndian.Uint64(s)
+		b := binary.LittleEndian.Uint64(s[length-8:])
 		return ch16(a, rot64(b+uint64(length), uint(length))) ^ b
 	}
 	if length >= 4 {
@@ -82,9 +84,9 @@ func CH64(s []byte) uint64 {
 		return ch33to64(s, length)
 	}
 
-	x := u64(s)
-	y := u64(s[length-16:]) ^ k1
-	z := u64(s[length-56:]) ^ k0
+	x := binary.LittleEndian.Uint64(s)
+	y := binary.LittleEndian.Uint64(s[length-16:]) ^ k1
+	z := binary.LittleEndian.Uint64(s[length-56:]) ^ k0
 
 	v := weakHash32SeedsByte(s[length-64:], uint64(length), y)
 	w := weakHash32SeedsByte(s[length-32:], uint64(length)*k1, k0)
@@ -95,8 +97,8 @@ func CH64(s []byte) uint64 {
 	// Decrease len to the nearest multiple of 64, and operate on 64-byte chunks.
 	s = s[:nearestMultiple64(s)]
 	for len(s) > 0 {
-		x = rot64(x+y+v.Low+u64(s[16:]), 37) * k1
-		y = rot64(y+v.High+u64(s[48:]), 42) * k1
+		x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[16:]), 37) * k1
+		y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:]), 42) * k1
 
 		x ^= w.High
 		y ^= v.Low

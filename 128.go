@@ -1,5 +1,7 @@
 package city
 
+import "encoding/binary"
+
 // much faster than uint64[2]
 
 // U128 is uint128.
@@ -23,18 +25,18 @@ func cityMurmur(s []byte, seed U128) U128 {
 
 		tmp := c
 		if length >= 8 {
-			tmp = u64(s)
+			tmp = binary.LittleEndian.Uint64(s)
 		}
 		d = shiftMix(a + tmp)
 	} else { // length > 16
-		c = hash16(u64(s[length-8:])+k1, a)
-		d = hash16(b+uint64(length), c+u64(s[length-16:]))
+		c = hash16(binary.LittleEndian.Uint64(s[length-8:])+k1, a)
+		d = hash16(b+uint64(length), c+binary.LittleEndian.Uint64(s[length-16:]))
 		a += d
 		for {
-			a ^= shiftMix(u64(s)*k1) * k1
+			a ^= shiftMix(binary.LittleEndian.Uint64(s)*k1) * k1
 			a *= k1
 			b ^= a
-			c ^= shiftMix(u64(s[8:])*k1) * k1
+			c ^= shiftMix(binary.LittleEndian.Uint64(s[8:])*k1) * k1
 			c *= k1
 			d ^= c
 			s = s[16:]
@@ -65,32 +67,32 @@ func Hash128Seed(s []byte, seed U128) U128 {
 	y := seed.High
 	z := uint64(len(s)) * k1
 
-	v.Low = rot64(y^k1, 49)*k1 + u64(s)
-	v.High = rot64(v.Low, 42)*k1 + u64(s[8:])
+	v.Low = rot64(y^k1, 49)*k1 + binary.LittleEndian.Uint64(s)
+	v.High = rot64(v.Low, 42)*k1 + binary.LittleEndian.Uint64(s[8:])
 	w.Low = rot64(y+z, 35)*k1 + x
-	w.High = rot64(x+u64(s[88:]), 53) * k1
+	w.High = rot64(x+binary.LittleEndian.Uint64(s[88:]), 53) * k1
 
 	// This is the same inner loop as Hash64(), manually unrolled.
 	for len(s) >= 128 {
 		// Roll 1.
-		x = rot64(x+y+v.Low+u64(s[8:]), 37) * k1
-		y = rot64(y+v.High+u64(s[48:]), 42) * k1
+		x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[8:]), 37) * k1
+		y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:]), 42) * k1
 		x ^= w.High
-		y += v.Low + u64(s[40:])
+		y += v.Low + binary.LittleEndian.Uint64(s[40:])
 		z = rot64(z+w.Low, 33) * k1
 		v = weakHash32SeedsByte(s, v.High*k1, x+w.Low)
-		w = weakHash32SeedsByte(s[32:], z+w.High, y+u64(s[16:]))
+		w = weakHash32SeedsByte(s[32:], z+w.High, y+binary.LittleEndian.Uint64(s[16:]))
 		z, x = x, z
 		s = s[64:]
 
 		// Roll 2.
-		x = rot64(x+y+v.Low+u64(s[8:]), 37) * k1
-		y = rot64(y+v.High+u64(s[48:]), 42) * k1
+		x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[8:]), 37) * k1
+		y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:]), 42) * k1
 		x ^= w.High
-		y += v.Low + u64(s[40:])
+		y += v.Low + binary.LittleEndian.Uint64(s[40:])
 		z = rot64(z+w.Low, 33) * k1
 		v = weakHash32SeedsByte(s, v.High*k1, x+w.Low)
-		w = weakHash32SeedsByte(s[32:], z+w.High, y+u64(s[16:]))
+		w = weakHash32SeedsByte(s[32:], z+w.High, y+binary.LittleEndian.Uint64(s[16:]))
 		z, x = x, z
 		s = s[64:]
 	}
@@ -105,9 +107,9 @@ func Hash128Seed(s []byte, seed U128) U128 {
 	for i := 0; i < len(s); {
 		i += 32
 		y = rot64(x+y, 42)*k0 + v.High
-		w.Low += u64(t[len(t)-i+16:])
+		w.Low += binary.LittleEndian.Uint64(t[len(t)-i+16:])
 		x = x*k0 + w.Low
-		z += w.High + u64(t[len(t)-i:])
+		z += w.High + binary.LittleEndian.Uint64(t[len(t)-i:])
 		w.High += v.Low
 		v = weakHash32SeedsByte(t[len(t)-i:], v.Low+z, v.High)
 		v.Low *= k0
@@ -133,8 +135,8 @@ func Hash128Seed(s []byte, seed U128) U128 {
 func Hash128(s []byte) U128 {
 	if len(s) >= 16 {
 		return Hash128Seed(s[16:], U128{
-			Low:  u64(s),
-			High: u64(s[8:]) + k0},
+			Low:  binary.LittleEndian.Uint64(s),
+			High: binary.LittleEndian.Uint64(s[8:]) + k0},
 		)
 	}
 	return Hash128Seed(s, U128{Low: k0, High: k1})
