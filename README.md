@@ -1,4 +1,4 @@
-# city [![](https://img.shields.io/badge/go-pkg-00ADD8)](https://pkg.go.dev/github.com/go-faster/city#section-documentation) [![](https://img.shields.io/codecov/c/github/go-faster/city?label=cover)](https://codecov.io/gh/go-faster/city) [![beta](https://img.shields.io/badge/-beta-yellow)](https://go-faster.org/docs/projects/status#beta)
+# city [![](https://img.shields.io/badge/go-pkg-00ADD8)](https://pkg.go.dev/github.com/go-faster/city#section-documentation) [![](https://img.shields.io/codecov/c/github/go-faster/city?label=cover)](https://codecov.io/gh/go-faster/city) [![stable](https://img.shields.io/badge/-stable-brightgreen)](https://go-faster.org/docs/projects/status#stable)
 [CityHash](https://github.com/google/cityhash) in Go. Fork of [tenfyzhong/cityhash](https://github.com/tenfyzhong/cityhash).
 
 Note: **prefer [xxhash](https://github.com/cespare/xxhash) as non-cryptographic hash algorithm**, this package is intended 
