@@ -9,7 +9,7 @@ import (
 func ExampleHash32() {
 	s := []byte("hello")
 	hash32 := city.Hash32(s)
-	fmt.Printf("the 32-bit hash of 'hello' is: 0x%x\n", hash32)
+	fmt.Printf("the 32-bit hash of 'hello' is: %#x\n", hash32)
 
 	// Output:
 	// the 32-bit hash of 'hello' is: 0x79969366
@@ -18,7 +18,7 @@ func ExampleHash32() {
 func ExampleHash64() {
 	s := []byte("hello")
 	hash64 := city.Hash64(s)
-	fmt.Printf("the 64-bit hash of 'hello' is: 0x%x\n", hash64)
+	fmt.Printf("the 64-bit hash of 'hello' is: %#x\n", hash64)
 
 	// Output:
 	// the 64-bit hash of 'hello' is: 0xb48be5a931380ce8
