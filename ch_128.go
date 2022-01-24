@@ -62,8 +62,8 @@ func chMurmur(s []byte, seed U128) U128 {
 func CH128(s []byte) U128 {
 	if len(s) >= 16 {
 		return CH128Seed(s[16:], U128{
-			Low:  binary.LittleEndian.Uint64(s) ^ k3,
-			High: binary.LittleEndian.Uint64(s[8:]),
+			Low:  binary.LittleEndian.Uint64(s[0:8:8]) ^ k3,
+			High: binary.LittleEndian.Uint64(s[8 : 8+8 : 8+8]),
 		})
 	}
 	if len(s) >= 8 {
@@ -92,17 +92,20 @@ func CH128Seed(s []byte, seed U128) U128 {
 	y := seed.High
 	z := uint64(len(s)) * k1
 
-	v.Low = rot64(y^k1, 49)*k1 + binary.LittleEndian.Uint64(s)
-	v.High = rot64(v.Low, 42)*k1 + binary.LittleEndian.Uint64(s[8:])
-	w.Low = rot64(y+z, 35)*k1 + x
-	w.High = rot64(x+binary.LittleEndian.Uint64(s[88:]), 53) * k1
+	{
+		subSlice := (*[96]byte)(s[0:])
+		v.Low = rot64(y^k1, 49)*k1 + binary.LittleEndian.Uint64(subSlice[0:])
+		v.High = rot64(v.Low, 42)*k1 + binary.LittleEndian.Uint64(subSlice[8:])
+		w.Low = rot64(y+z, 35)*k1 + x
+		w.High = rot64(x+binary.LittleEndian.Uint64(subSlice[88:]), 53) * k1
+	}
 
 	// This is the same inner loop as CH64(), manually unrolled.
 	for len(s) >= 128 {
 		// Roll 1.
 		{
-			x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[16:]), 37) * k1
-			y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:]), 42) * k1
+			x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[16:16+8:16+8]), 37) * k1
+			y = rot64(y+v.High+binary.LittleEndian.Uint64(s[48:48+8:48+8]), 42) * k1
 
 			x ^= w.High
 			y ^= v.Low
@@ -116,8 +119,8 @@ func CH128Seed(s []byte, seed U128) U128 {
 		// Roll 2.
 		{
 			const offset = 64
-			x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[offset+16:]), 37) * k1
-			y = rot64(y+v.High+binary.LittleEndian.Uint64(s[offset+48:]), 42) * k1
+			x = rot64(x+y+v.Low+binary.LittleEndian.Uint64(s[offset+16:offset+16+8:offset+16+8]), 37) * k1
+			y = rot64(y+v.High+binary.LittleEndian.Uint64(s[offset+48:offset+48+8:offset+48+8]), 42) * k1
 			x ^= w.High
 			y ^= v.Low
 
