@@ -11,7 +11,7 @@ func chMurmur(s []byte, seed U128) U128 {
 	c := uint64(0)
 	d := uint64(0)
 	l := length - 16
-	if l <= 0 { // length <= 16
+	if len(s) <= 16 { // length <= 16
 		a = shiftMix(a*k1) * k1
 		c = b*k1 + ch0to16(s, length)
 
@@ -25,18 +25,31 @@ func chMurmur(s []byte, seed U128) U128 {
 		d = ch16(b+uint64(length), c+binary.LittleEndian.Uint64(s[length-16:]))
 		a += d
 
-		for {
-			a ^= shiftMix(binary.LittleEndian.Uint64(s)*k1) * k1
+		{
+			a ^= shiftMix(binary.LittleEndian.Uint64(s[0:8:8])*k1) * k1
 			a *= k1
 			b ^= a
-			c ^= shiftMix(binary.LittleEndian.Uint64(s[8:])*k1) * k1
+			c ^= shiftMix(binary.LittleEndian.Uint64(s[8:8+8:8+8])*k1) * k1
 			c *= k1
 			d ^= c
 			s = s[16:]
 			l -= 16
+		}
 
-			if l <= 0 {
-				break
+		if l > 0 {
+			for len(s) >= 16 {
+				a ^= shiftMix(binary.LittleEndian.Uint64(s[0:8:8])*k1) * k1
+				a *= k1
+				b ^= a
+				c ^= shiftMix(binary.LittleEndian.Uint64(s[8:8+8:8+8])*k1) * k1
+				c *= k1
+				d ^= c
+				s = s[16:]
+				l -= 16
+
+				if l <= 0 {
+					break
+				}
 			}
 		}
 	}
